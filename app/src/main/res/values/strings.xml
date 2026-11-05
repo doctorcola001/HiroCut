@@ -151,6 +151,6 @@
     <string name="language_english">English</string>
     <string name="custom_background_locked">Custom background · coming later</string>
     <string name="version_info">Version %1$s</string>
-    <string name="rights_reserved">All rights reserved.</string>
+    <string name="rights_reserved">© 2026 doctorcola001 · Noncommercial</string>
     <string name="delete_clip_number">Delete clip %1$d</string>
 </resources>

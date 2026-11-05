@@ -22,3 +22,7 @@
 5. 使用`v0.1.0`标签；若上传的是测试APK，附件名和说明须明确`debug`。
 
 本地历史APK和详细机器验证日志保留在忽略目录中，不随源码提交。未签名release产物不可标为已签名安装包。
+
+## 许可证随包发布
+
+本项目使用PolyForm Noncommercial 1.0.0。源码和再分发须保留LICENSE/NOTICE；第三方库原有许可见THIRD_PARTY_NOTICES.md。APK的assets/legal包含协议、版权通知和运行时依赖许可文本。发布前核对其与根目录文件一致。

@@ -85,3 +85,8 @@
 
 - 模糊须在点击打开时就启用，不能仅绑定DrawerState.isOpen（该值要等展开动画结束）。关闭动画结束后再清除。
 - API31+复用预建RenderEffect及固定graphicsLayer；API29/30截图后高斯计算与展开动画并行，不等CPU模糊完成才调用open。
+
+## 公开发布许可
+
+- 原创内容按PolyForm Noncommercial 1.0.0发布，版权署名doctorcola001及贡献者。不得将其标为OSI开源协议或改成允许商业使用的授权。
+- 保留LICENSE、NOTICE及第三方许可；项目非商用限制不覆盖独立第三方库原有授权。APK的assets/legal与根目录许可文件须同步。

@@ -31,6 +31,13 @@ jobs:
           cache: gradle
       - name: Install Android SDK components
         run: sdkmanager 'platforms;android-36' 'build-tools;36.0.0'
+      - name: Check packaged license notices
+        run: |
+          cmp LICENSE app/src/main/assets/legal/LICENSE
+          cmp NOTICE app/src/main/assets/legal/NOTICE
+          cmp THIRD_PARTY_NOTICES.md app/src/main/assets/legal/THIRD_PARTY_NOTICES.md
+          cmp LICENSES/Apache-2.0.txt app/src/main/assets/legal/Apache-2.0.txt
+          cmp LICENSES/Checker-Framework-MIT.txt app/src/main/assets/legal/Checker-Framework-MIT.txt
       - name: Build and check
         run: ./gradlew :app:assembleDebug :app:assembleRelease :app:testDebugUnitTest :app:lintDebug :app:assembleDebugAndroidTest --console=plain
       - name: Upload build outputs

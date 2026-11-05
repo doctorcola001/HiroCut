@@ -150,6 +150,6 @@
     <string name="language_english">English</string>
     <string name="custom_background_locked">自定义背景 · 暂未开放</string>
     <string name="version_info">版本 %1$s</string>
-    <string name="rights_reserved">All rights reserved.</string>
+    <string name="rights_reserved">© 2026 doctorcola001 · 非商业使用</string>
     <string name="delete_clip_number">删除第 %1$d 个片段</string>
 </resources>
