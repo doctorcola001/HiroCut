@@ -1,0 +1,29 @@
+# Local IDE / build state
+*.iml
+.gradle/
+.kotlin/
+.idea/
+**/build/
+local.properties
+.DS_Store
+
+# Credentials and local signing material
+*.jks
+*.keystore
+keystore.properties
+signing.properties
+.env
+.env.*
+!.env.example
+
+# APKs, local evidence, and historical build outputs
+/artifacts/
+/docs/*
+!/docs/DEVELOPMENT.md
+!/docs/RELEASING.md
+!/docs/PRIVACY.md
+!/docs/images/
+/docs/images/*
+!/docs/images/editor.png
+!/docs/images/drawer.png
+!/docs/images/export.png
