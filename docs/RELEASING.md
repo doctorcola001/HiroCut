@@ -1,5 +1,7 @@
 # 发布与签名
 
+发布采用本机构建，不等待GitHub Actions。云端工作流仅手动触发。README.md为中文，README.en.md为英文，顶部提供切换链接。
+
 版本：`0.1.0`，versionCode：`8`。版本配置在`app/build.gradle.kts`。
 
 ## 两种本地产物

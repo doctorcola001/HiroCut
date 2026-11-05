@@ -1,10 +1,7 @@
-name: Android
+name: Android (manual)
 
+# Releases use locally built and verified artifacts. Cloud builds are opt-in.
 on:
-  push:
-    branches: [main]
-    tags: ['v*']
-  pull_request:
   workflow_dispatch:
 
 permissions:

@@ -1,10 +1,10 @@
 # HiroCut
 
+**简体中文** | [English](README.en.md)
+
 Android 离线视频裁切与顺序拼接工具，当前版本 **v0.1.0**。使用 Kotlin、Jetpack Compose 和 AndroidX Media3 构建，支持 Android 10 及以上。
 
 从一个视频中选取多个片段，按列表顺序导出为一个 MP4。每条轨道都使用完整源视频坐标，可以重复、重叠或逆序选取。
-
-HiroCut is an offline Android video trimmer and sequential joiner. Select multiple ranges from one source, arrange their order, and export one MP4. Android 10 or later is required. English and Simplified Chinese are included.
 
 ## 功能
 
@@ -19,6 +19,10 @@ HiroCut is an offline Android video trimmer and sequential joiner. Select multip
 | 编辑器 | 片段侧栏 | 导出结果 |
 | --- | --- | --- |
 | ![编辑器](docs/images/editor.png) | ![片段侧栏](docs/images/drawer.png) | ![导出结果](docs/images/export.png) |
+
+## 下载
+
+在 [GitHub Releases](https://github.com/doctorcola001/HiroCut/releases/tag/v0.1.0) 下载本机构建的 v0.1.0 预览安装包与 SHA-256 校验文件。当前 APK 使用调试签名，正式长期发布签名尚未配置。
 
 ## 使用
 
@@ -44,7 +48,7 @@ HiroCut is an offline Android video trimmer and sequential joiner. Select multip
 
 ## 构建
 
-需要 **JDK 17**、Android SDK Platform 36 和 Build Tools 36.0.0。依赖版本已锁定，首次构建需要下载依赖；应用运行离线。
+需要 **JDK 17**、Android SDK Platform 36 和 Build Tools 36.0.0。依赖版本已锁定，首次构建需要下载依赖；应用运行离线。日常发布采用本机构建，GitHub Actions 仅保留手动触发。
 
 ```bash
 export JAVA_HOME=/path/to/jdk-17
