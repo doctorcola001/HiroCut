@@ -153,4 +153,23 @@
     <string name="version_info">Version %1$s</string>
     <string name="rights_reserved">© 2026 doctorcola001 · Noncommercial</string>
     <string name="delete_clip_number">Delete clip %1$d</string>
+    <string name="mode_hybrid">Compatible · re-encode boundaries safely</string>
+    <string name="hybrid_description">A compatibility fallback. The current v0.2 engine re-encodes the selected sequence for reliability; it does not yet promise frame-only smart rendering.</string>
+    <string name="review_hybrid">Compatible mode · encoded output</string>
+    <string name="try_hybrid">Use compatible mode</string>
+    <string name="restore_choice_title">Continue previous project?</string>
+    <string name="restore_choice_body">A saved source and draft were found on this device. Continue it, or start a new project?</string>
+    <string name="continue_last_project">Continue</string>
+    <string name="start_new_project">New project</string>
+    <string name="source_video_info">Video: %1$s · %2$s · %3$dx%4$d</string>
+    <string name="source_audio_info">Audio: %1$s · %2$d Hz · %3$d ch</string>
+    <string name="source_container_info">Container: %1$s · %2$s</string>
+    <string name="source_bitrate_info">Video bitrate: %1$s · %2$s fps</string>
+    <string name="none">none</string>
+    <string name="unknown">unknown</string>
+    <string name="export_technical_detail">Technical detail: %1$s</string>
+    <string name="mode_smart">Smart · copy safe parts, encode only unsafe boundaries</string>
+    <string name="smart_description">Smart render: copy IDR-safe segments and encode only segments whose boundaries cannot be copied.</string>
+    <string name="review_smart">Smart render · mixed copy and boundary encoding</string>
+    <string name="try_smart">Use smart render</string>
 </resources>

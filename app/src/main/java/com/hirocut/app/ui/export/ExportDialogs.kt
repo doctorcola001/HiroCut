@@ -28,11 +28,21 @@ fun ExportModeDialog(onChoose: (ExportMode) -> Unit, onDismiss: () -> Unit) {
     var mode by remember { mutableStateOf(ExportMode.Fast) }
     AlertDialog(onDismissRequest = onDismiss, title = { Text(stringResource(R.string.export_options)) },
         text = { Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-            ExportMode.entries.forEach { value ->
+            ExportMode.entries.filter { it != ExportMode.Hybrid }.forEach { value ->
                 FilterChip(selected = mode == value, onClick = { mode = value },
-                    label = { Text(stringResource(if (value == ExportMode.Fast) R.string.mode_fast else R.string.mode_precise)) })
+                    label = { Text(stringResource(when (value) {
+                        ExportMode.Fast -> R.string.mode_fast
+                        ExportMode.Smart -> R.string.mode_smart
+                        ExportMode.Hybrid -> R.string.mode_smart
+                        ExportMode.Precise -> R.string.mode_precise
+                    })) })
             }
-            Text(stringResource(if (mode == ExportMode.Fast) R.string.fast_description else R.string.precise_description))
+            Text(stringResource(when (mode) {
+                ExportMode.Fast -> R.string.fast_description
+                ExportMode.Smart -> R.string.smart_description
+                ExportMode.Hybrid -> R.string.smart_description
+                ExportMode.Precise -> R.string.precise_description
+            }))
         } },
         confirmButton = { TextButton(onClick = { onChoose(mode) }, modifier = Modifier.testTag("prepare-export")) { Text(stringResource(R.string.check_export)) } },
         dismissButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) } })
@@ -81,7 +91,12 @@ fun ExportDialogs(state: ExportUiState, model: EditorViewModel) {
                 }
             }
             if (state.stage == ExportStage.Review) state.plan?.let { plan ->
-                Text(stringResource(if (plan.mode == ExportMode.Fast) R.string.review_fast else R.string.review_precise))
+                Text(stringResource(when (plan.mode) {
+                    ExportMode.Fast -> R.string.review_fast
+                    ExportMode.Smart -> R.string.review_smart
+                    ExportMode.Hybrid -> R.string.review_smart
+                    ExportMode.Precise -> R.string.review_precise
+                }))
                 Text(stringResource(R.string.planned_duration, TimelineTime.format(plan.durationUs / 1000)))
                 if (plan.adjusted) Text(stringResource(R.string.boundaries_adjusted), color = MaterialTheme.colorScheme.secondary)
                 plan.segments.forEachIndexed { index, segment ->
@@ -100,6 +115,7 @@ fun ExportDialogs(state: ExportUiState, model: EditorViewModel) {
             if (state.recovered && state.stage == ExportStage.Ready) Text(stringResource(R.string.recovered_output), style = MaterialTheme.typography.bodySmall)
             if (state.incompleteDestination) Text(stringResource(R.string.incomplete_destination), color = MaterialTheme.colorScheme.error)
             state.problem?.let { Text(stringResource(problemString(it)), color = MaterialTheme.colorScheme.error) }
+            state.problemDetail?.let { detail -> Text(stringResource(R.string.export_technical_detail, detail), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
             if (openFailed) Text(stringResource(R.string.open_result_failed), color = MaterialTheme.colorScheme.error)
         } },
         confirmButton = {
@@ -113,7 +129,7 @@ fun ExportDialogs(state: ExportUiState, model: EditorViewModel) {
                     catch (_: Exception) { openFailed = true }
                 }) { Text(stringResource(R.string.open_video)) }
                 ExportStage.Failed -> if (state.problem in listOf(ExportProblem.FastUnavailable, ExportProblem.NotStreamCopy)) {
-                    TextButton(onClick = { model.dismissExport(); model.prepareExport(ExportMode.Precise) }) { Text(stringResource(R.string.try_precise)) }
+                    TextButton(onClick = { model.dismissExport(); model.prepareExport(ExportMode.Smart) }) { Text(stringResource(R.string.try_smart)) }
                 } else TextButton(onClick = model::dismissExport) { Text(stringResource(R.string.ok)) }
                 else -> if (state.working && state.stage != ExportStage.Cancelling) TextButton(onClick = model::cancelExport,
                     modifier = Modifier.testTag("cancel-export")) { Text(stringResource(R.string.cancel)) }

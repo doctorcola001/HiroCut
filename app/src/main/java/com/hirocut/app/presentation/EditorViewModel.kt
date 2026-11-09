@@ -40,6 +40,7 @@ data class EditorUiState(
     val draftDiscarded: Boolean = false,
     val draftSaveFailed: Boolean = false,
     val notice: EditNotice = EditNotice.Ready,
+    val restoreChoicePending: Boolean = false,
 )
 
 @UnstableApi
@@ -68,7 +69,23 @@ class EditorViewModel(application: Application, private val savedState: SavedSta
                 }
             }
         }
-        repository.savedUri()?.let { importVideo(it, restoring = true) }
+        if (repository.savedUri() != null) {
+            mutableState.value = mutableState.value.copy(restoreChoicePending = true)
+        }
+    }
+
+    fun continueLastProject() {
+        val uri = repository.savedUri() ?: return startNewProject()
+        mutableState.value = mutableState.value.copy(restoreChoicePending = false)
+        importVideo(uri, restoring = true)
+    }
+
+    fun startNewProject() {
+        repository.forget()
+        drafts.clear()
+        history = null
+        playback.pause()
+        mutableState.value = EditorUiState()
     }
 
     fun importVideo(uri: Uri, restoring: Boolean = false) {
@@ -89,7 +106,8 @@ class EditorViewModel(application: Application, private val savedState: SavedSta
                 savedState["positionMs"] = position
                 mutableState.value = EditorUiState(source = source, project = project,
                     selectedId = restored?.selectedId ?: project.clips.first().id,
-                    draftDiscarded = restored?.discarded == true)
+                    draftDiscarded = restored?.discarded == true,
+                    restoreChoicePending = false)
                 saveDraft()
             } catch (error: CancellationException) { throw error }
             catch (error: SourceImportException) {

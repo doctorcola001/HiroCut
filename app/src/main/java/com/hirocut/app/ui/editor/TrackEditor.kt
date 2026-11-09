@@ -32,10 +32,11 @@ fun TrackEditor(state: EditorUiState, positionMs: Long, model: EditorViewModel, 
         contentPadding = PaddingValues(bottom = 6.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
         itemsIndexed(project.clips, key = { _, clip -> clip.id }) { index, clip ->
             val selected = clip.id == state.selectedId
+            val accent = trackAccent(index)
             Card(onClick = { model.selectClip(clip.id) },
-                colors = CardDefaults.cardColors(containerColor = if (selected) MaterialTheme.colorScheme.primaryContainer
+                colors = CardDefaults.cardColors(containerColor = if (selected) accent.copy(alpha = .20f)
                     else MaterialTheme.colorScheme.surface),
-                border = BorderStroke(1.dp, if (selected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.outline.copy(alpha = .35f)),
+                border = BorderStroke(1.dp, if (selected) accent else accent.copy(alpha = .35f)),
                 modifier = Modifier.fillMaxWidth().testTag("clip-${clip.id}")) {
                 Column(Modifier.padding(vertical = 4.dp)) {
                     Row(Modifier.fillMaxWidth().padding(horizontal = 4.dp), horizontalArrangement = Arrangement.spacedBy(2.dp)) {
@@ -53,7 +54,7 @@ fun TrackEditor(state: EditorUiState, positionMs: Long, model: EditorViewModel, 
                     }
                     Text(stringResource(R.string.range_times, TimelineTime.format(clip.inMs), TimelineTime.format(clip.outMs)),
                         style = MaterialTheme.typography.labelMedium, modifier = Modifier.padding(horizontal = 8.dp).testTag("range-${clip.id}"))
-                    RangeTimeline(clip, project.durationMs, positionMs, selected,
+                    RangeTimeline(clip, project.durationMs, positionMs, selected, accent,
                         onSelect = { model.selectClip(clip.id); model.pausePlayback() },
                         onSeek = model::previewSeek, onSeekFinished = model::seek,
                         onBegin = { model.beginRangeGesture(clip.id, it) },

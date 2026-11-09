@@ -3,6 +3,8 @@ package com.hirocut.app.ui.editor
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -43,23 +45,33 @@ fun EditorDrawer(editor: EditorUiState, open: Boolean, onSettings: () -> Unit, o
             Text(pluralStringResource(R.plurals.project_summary, project.clips.size, project.clips.size, TimelineTime.format(project.totalDurationMs)), style = MaterialTheme.typography.labelMedium)
         }
         Text(editor.source?.displayName.orEmpty(), style = MaterialTheme.typography.labelSmall, maxLines = 2)
+        editor.source?.let { source ->
+            Column(Modifier.padding(top = 4.dp), verticalArrangement = Arrangement.spacedBy(1.dp)) {
+                Text(stringResource(R.string.source_video_info, source.videoCodec ?: "?", source.videoMime ?: "?", source.width, source.height), style = MaterialTheme.typography.labelSmall)
+                Text(stringResource(R.string.source_audio_info, source.audioCodec ?: stringResource(R.string.none), source.audioSampleRate, source.audioChannels), style = MaterialTheme.typography.labelSmall)
+                Text(stringResource(R.string.source_container_info, source.containerMime ?: stringResource(R.string.unknown), source.fileSizeBytes?.let { formatBytes(it) } ?: stringResource(R.string.unknown)), style = MaterialTheme.typography.labelSmall)
+                Text(stringResource(R.string.source_bitrate_info, formatBitrate(source.videoBitrate), if (source.frameRate > 0) String.format(java.util.Locale.ROOT, "%.2f", source.frameRate) else stringResource(R.string.unknown)), style = MaterialTheme.typography.labelSmall)
+            }
+        }
         HorizontalDivider(Modifier.padding(vertical = 8.dp))
         LazyColumn(Modifier.weight(1f)) {
             itemsIndexed(editor.project?.clips.orEmpty(), key = { _, clip -> clip.id }) { index, clip ->
+                val accent = trackAccent(index)
                 val cover by produceState<android.graphics.Bitmap?>(null, open, editor.source?.uri, clip.inMs) {
                     value = if (open) editor.source?.let { thumbnails.firstFrame(it, clip.inMs) } else null
                 }
-                Surface(color = if (clip.id == editor.selectedId) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surface) {
+                Surface(color = if (clip.id == editor.selectedId) accent.copy(alpha = .20f) else MaterialTheme.colorScheme.surface) {
                     Row(Modifier.fillMaxWidth().padding(vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
                         Row(Modifier.weight(1f).clickable(enabled = editable) { onSelect(clip.id) }.padding(vertical = 2.dp), verticalAlignment = Alignment.CenterVertically) {
+                        Box(Modifier.width(4.dp).height(42.dp).background(accent))
                         Box(Modifier.size(72.dp, 42.dp), contentAlignment = Alignment.Center) {
-                            cover?.let { Image(it.asImageBitmap(), null, Modifier.fillMaxSize(), contentScale = ContentScale.Crop) }
+                            cover?.let { Image(it.asImageBitmap(), null, Modifier.fillMaxSize().border(1.dp, accent.copy(alpha = .75f)), contentScale = ContentScale.Crop) }
                         }
-                        Text("${index + 1}  ·  ${TimelineTime.format(clip.durationMs)}", Modifier.weight(1f).padding(start = 8.dp), style = MaterialTheme.typography.labelMedium)
+                        Text("${index + 1}  ·  ${TimelineTime.format(clip.durationMs)}", Modifier.weight(1f).padding(start = 8.dp), style = MaterialTheme.typography.labelMedium, color = if (clip.id == editor.selectedId) accent else MaterialTheme.colorScheme.onSurface)
                         }
                         IconButton(onClick = { onDelete(clip.id) }, enabled = editable && (editor.project?.clips?.size ?: 0) > 1,
                             modifier = Modifier.size(40.dp).testTag("drawer-delete-${clip.id}")) {
-                            Icon(painterResource(R.drawable.ic_delete), stringResource(R.string.delete_clip_number, index + 1), Modifier.size(20.dp))
+                            Icon(painterResource(R.drawable.ic_delete), stringResource(R.string.delete_clip_number, index + 1), Modifier.size(20.dp), tint = accent)
                         }
                     }
                 }
@@ -69,6 +81,14 @@ fun EditorDrawer(editor: EditorUiState, open: Boolean, onSettings: () -> Unit, o
         Text(stringResource(R.string.version_info, version), style = MaterialTheme.typography.labelSmall)
         Text(stringResource(R.string.rights_reserved), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
+}
+
+private fun formatBitrate(value: Int): String = if (value > 0) "${value / 1000} kbps" else "?"
+private fun formatBytes(value: Long): String = when {
+    value >= 1_000_000_000 -> String.format(java.util.Locale.ROOT, "%.2f GB", value / 1_000_000_000.0)
+    value >= 1_000_000 -> String.format(java.util.Locale.ROOT, "%.1f MB", value / 1_000_000.0)
+    value >= 1_000 -> String.format(java.util.Locale.ROOT, "%.1f KB", value / 1_000.0)
+    else -> "$value B"
 }
 
 @androidx.annotation.OptIn(androidx.media3.common.util.UnstableApi::class)

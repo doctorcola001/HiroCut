@@ -3,6 +3,8 @@ package com.hirocut.app.data.files
 import android.content.Context
 import android.content.Intent
 import android.media.MediaMetadataRetriever
+import android.media.MediaExtractor
+import android.media.MediaFormat
 import android.net.Uri
 import android.provider.OpenableColumns
 import android.system.ErrnoException
@@ -52,10 +54,29 @@ class SourceRepository(private val context: Context) {
                 if (width <= 0 || height <= 0) throw SourceImportException(ImportFailure.NoVideo)
                 val duration = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION)?.toLongOrNull() ?: 0
                 if (duration <= 0) throw SourceImportException(ImportFailure.InvalidDuration)
-                SourceVideo(uri.toString(), displayName, duration, width, height,
+                val extractor = MediaExtractor()
+                try {
+                    extractor.setDataSource(context, uri, null)
+                    val videoFormat = (0 until extractor.trackCount).map { extractor.getTrackFormat(it) }
+                        .firstOrNull { it.getString(MediaFormat.KEY_MIME)?.startsWith("video/") == true }
+                    val audioFormat = (0 until extractor.trackCount).map { extractor.getTrackFormat(it) }
+                        .firstOrNull { it.getString(MediaFormat.KEY_MIME)?.startsWith("audio/") == true }
+                    val container = resolver.getType(uri)
+                    SourceVideo(uri.toString(), displayName, duration, width, height,
                     retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_VIDEO_ROTATION)?.toIntOrNull() ?: 0,
                     retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_HAS_AUDIO) == "yes",
-                    hasGrant(uri), fileSize)
+                    hasGrant(uri), fileSize,
+                    containerMime = container,
+                    videoMime = videoFormat?.getString(MediaFormat.KEY_MIME),
+                    videoCodec = videoFormat?.getString(MediaFormat.KEY_MIME)?.substringAfter('/'),
+                    videoProfile = videoFormat?.getIntegerOrNull(MediaFormat.KEY_PROFILE)?.toString(),
+                    videoBitrate = videoFormat?.getIntegerOrNull(MediaFormat.KEY_BIT_RATE) ?: 0,
+                    frameRate = videoFormat?.getFloatOrNull(MediaFormat.KEY_FRAME_RATE) ?: 0f,
+                    audioMime = audioFormat?.getString(MediaFormat.KEY_MIME),
+                    audioCodec = audioFormat?.getString(MediaFormat.KEY_MIME)?.substringAfter('/'),
+                    audioSampleRate = audioFormat?.getIntegerOrNull(MediaFormat.KEY_SAMPLE_RATE) ?: 0,
+                    audioChannels = audioFormat?.getIntegerOrNull(MediaFormat.KEY_CHANNEL_COUNT) ?: 0)
+                } finally { extractor.release() }
             }
         } catch (error: Exception) {
             if (!heldBefore) releaseGrant(uri)
@@ -63,6 +84,11 @@ class SourceRepository(private val context: Context) {
             throw SourceImportException(ImportFailure.Unreadable)
         }
     }
+
+    private fun MediaFormat.getIntegerOrNull(key: String): Int? =
+        if (containsKey(key)) runCatching { getInteger(key) }.getOrNull() else null
+    private fun MediaFormat.getFloatOrNull(key: String): Float? =
+        if (containsKey(key)) runCatching { getFloat(key) }.getOrNull() else null
 
     fun remember(source: SourceVideo) {
         val oldUri = savedUri()

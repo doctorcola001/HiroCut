@@ -179,6 +179,13 @@ fun EditorScreen(editor: EditorUiState, playback: PlaybackState, model: EditorVi
         }
     }
     if (settings) EditorSettings(onDismiss = { settings = false })
+    if (editor.restoreChoicePending) AlertDialog(
+        onDismissRequest = {},
+        title = { Text(stringResource(R.string.restore_choice_title)) },
+        text = { Text(stringResource(R.string.restore_choice_body)) },
+        confirmButton = { TextButton(onClick = model::continueLastProject) { Text(stringResource(R.string.continue_last_project)) } },
+        dismissButton = { TextButton(onClick = model::startNewProject) { Text(stringResource(R.string.start_new_project)) } },
+    )
     if (chooseExport) ExportModeDialog(
         onChoose = { mode -> chooseExport = false; model.prepareExport(mode) },
         onDismiss = { chooseExport = false },

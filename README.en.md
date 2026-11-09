@@ -2,7 +2,7 @@
 
 [简体中文](README.md) | **English**
 
-An offline Android video trimmer and sequential joiner, currently **v0.1.0**. Built with Kotlin, Jetpack Compose, and AndroidX Media3. Requires Android 10 or later.
+An offline Android video trimmer and sequential joiner, currently **v0.2.2**. Built with Kotlin, Jetpack Compose, and AndroidX Media3. Requires Android 10 or later.
 
 Select multiple ranges from one video, arrange them in a list, and export a single MP4. Every track uses the complete source timeline; repeated, overlapping, and reverse-order ranges are supported.
 
@@ -22,7 +22,7 @@ Select multiple ranges from one video, arrange them in a list, and export a sing
 
 ## Download
 
-Download the locally built v0.1.0 preview APK and its SHA-256 checksum from [GitHub Releases](https://github.com/doctorcola001/HiroCut/releases/tag/v0.1.0). The current APK uses a debug signing key; long-term production signing is not configured yet.
+The v0.2.2 preview APK is built locally and includes source-video technical details, startup restore choice, per-track colors, and a compatible export fallback. The current APK uses a debug signing key; long-term production signing is not configured yet.
 
 ## Usage
 

@@ -31,11 +31,12 @@ import kotlin.math.abs
 @Composable
 fun RangeTimeline(
     clip: ClipRange, durationMs: Long, positionMs: Long, selected: Boolean,
+    accent: Color = MaterialTheme.colorScheme.primary,
     onSelect: () -> Unit, onSeek: (Long) -> Unit, onSeekFinished: (Long) -> Unit,
     onBegin: (Boundary) -> Unit, onDrag: (Boundary, Long) -> Unit,
     onFinish: () -> Unit, onCancel: () -> Unit,
 ) {
-    val primary = MaterialTheme.colorScheme.primary
+    val primary = accent
     val muted = MaterialTheme.colorScheme.surfaceVariant
     val pointerColor = MaterialTheme.colorScheme.secondary
     val latestClip by rememberUpdatedState(clip)

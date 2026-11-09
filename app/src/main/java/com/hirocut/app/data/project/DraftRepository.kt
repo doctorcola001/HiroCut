@@ -16,6 +16,8 @@ data class DraftRestore(val project: EditProject? = null, val selectedId: String
 class DraftRepository(context: Context, name: String = "editor-draft") {
     private val prefs = context.getSharedPreferences(name, Context.MODE_PRIVATE)
 
+    fun clear() { prefs.edit().remove("draft").apply() }
+
     suspend fun load(source: SourceVideo): DraftRestore = withContext(Dispatchers.IO) {
         val raw = prefs.getString("draft", null) ?: return@withContext DraftRestore()
         try {

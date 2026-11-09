@@ -2,7 +2,7 @@
 
 **简体中文** | [English](README.en.md)
 
-Android 离线视频裁切与顺序拼接工具，当前版本 **v0.1.0**。使用 Kotlin、Jetpack Compose 和 AndroidX Media3 构建，支持 Android 10 及以上。
+Android 离线视频裁切与顺序拼接工具，当前版本 **v0.2.2**。使用 Kotlin、Jetpack Compose 和 AndroidX Media3 构建，支持 Android 10 及以上。
 
 从一个视频中选取多个片段，按列表顺序导出为一个 MP4。每条轨道都使用完整源视频坐标，可以重复、重叠或逆序选取。
 
@@ -22,7 +22,7 @@ Android 离线视频裁切与顺序拼接工具，当前版本 **v0.1.0**。使�
 
 ## 下载
 
-在 [GitHub Releases](https://github.com/doctorcola001/HiroCut/releases/tag/v0.1.0) 下载本机构建的 v0.1.0 预览安装包与 SHA-256 校验文件。当前 APK 使用调试签名，正式长期发布签名尚未配置。
+v0.2.2 APK 会作为本机构建预览包提供，包含源视频技术信息、启动恢复选择、轨道颜色和Smart 智能导出模式。当前 APK 使用调试签名，正式长期发布签名尚未配置。
 
 ## 使用
 

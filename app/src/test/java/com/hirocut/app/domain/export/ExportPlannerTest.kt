@@ -22,6 +22,18 @@ class ExportPlannerTest {
         assertEquals(875_000L, plan.segments.single().outUs)
         assertFalse(plan.adjusted)
     }
+    @Test fun hybridModePreservesNonKeyframeRequests() {
+        val plan = ExportPlanner.build(source, project(125L to 875L), ExportMode.Smart, spec)
+        assertEquals(125_000L, plan.segments.single().inUs)
+        assertEquals(875_000L, plan.segments.single().outUs)
+        assertFalse(plan.adjusted)
+    }
+    @Test fun smartModeMarksNonKeyframeSegmentForEncoding() {
+        val noBoundaryKey = spec.copy(syncPoints = listOf(SyncPoint(4_000_000, true)))
+        val plan = ExportPlanner.build(source, project(125L to 875L), ExportMode.Smart, noBoundaryKey)
+        assertEquals(125_000L, plan.segments.single().inUs)
+        assertFalse(plan.segments.single().smartCopy)
+    }
     @Test fun orderAndDuplicateSelectionsAreNeverNormalized() {
         val plan = ExportPlanner.build(source, project(4000L to 5000L, 0L to 1000L, 0L to 1000L), ExportMode.Fast, spec)
         assertEquals(listOf(4_000_000L, 0L, 0L), plan.segments.map { it.inUs })

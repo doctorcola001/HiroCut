@@ -19,7 +19,8 @@ class SourceProbe(private val context: Context) {
             extractor.setDataSource(context, Uri.parse(source.uri), null)
             val videos = (0 until extractor.trackCount).filter { extractor.getTrackFormat(it).getString(MediaFormat.KEY_MIME)?.startsWith("video/") == true }
             val audios = (0 until extractor.trackCount).filter { extractor.getTrackFormat(it).getString(MediaFormat.KEY_MIME)?.startsWith("audio/") == true }
-            if (videos.size != 1 || audios.size > 1) throw ExportFailure(ExportProblem.Unsupported)
+            if (videos.size != 1 || audios.size > 1) throw ExportFailure(ExportProblem.Unsupported,
+                "video tracks=${videos.size}, audio tracks=${audios.size}; expected one video and at most one audio track")
             val video = extractor.getTrackFormat(videos.single())
             val audio = audios.firstOrNull()?.let(extractor::getTrackFormat)
             val mime = video.getString(MediaFormat.KEY_MIME).orEmpty()
@@ -32,30 +33,34 @@ class SourceProbe(private val context: Context) {
                     MediaCodecInfo.CodecProfileLevel.HEVCProfileMain10HDR10, MediaCodecInfo.CodecProfileLevel.HEVCProfileMain10HDR10Plus))
                 || (mime == "video/avc" && profile in listOf(MediaCodecInfo.CodecProfileLevel.AVCProfileHigh10,
                     MediaCodecInfo.CodecProfileLevel.AVCProfileHigh422, MediaCodecInfo.CodecProfileLevel.AVCProfileHigh444))) {
-                throw ExportFailure(ExportProblem.HdrUnsupported)
+                throw ExportFailure(ExportProblem.HdrUnsupported, "video=$mime profile=$profile transfer=${video.int(MediaFormat.KEY_COLOR_TRANSFER)} standard=${video.int(MediaFormat.KEY_COLOR_STANDARD)}")
             }
             if (mime !in listOf("video/avc", "video/hevc") || (audioMime != null && audioMime != "audio/mp4a-latm")) {
-                throw ExportFailure(ExportProblem.Unsupported)
+                throw ExportFailure(ExportProblem.Unsupported, "video=$mime, audio=${audioMime ?: "none"}; supported audio is AAC and video is AVC/HEVC")
             }
             // Do not guess the bit depth when the extractor cannot establish the source profile.
-            if (mime == "video/hevc" && profile != MediaCodecInfo.CodecProfileLevel.HEVCProfileMain) throw ExportFailure(ExportProblem.Unsupported)
-            if (mime == "video/avc" && !hasEightBitAvcSps(video)) throw ExportFailure(ExportProblem.Unsupported)
-            if ((audio != null) != source.hasAudio) throw ExportFailure(ExportProblem.Unsupported)
+            if (mime == "video/hevc" && profile != MediaCodecInfo.CodecProfileLevel.HEVCProfileMain) throw ExportFailure(ExportProblem.Unsupported, "HEVC profile=$profile; v0.2 accepts Main 8-bit HEVC only")
+            if (mime == "video/avc" && !hasEightBitAvcSps(video)) throw ExportFailure(ExportProblem.Unsupported, "AVC profile/SPS did not verify as 8-bit")
+            if ((audio != null) != source.hasAudio) throw ExportFailure(ExportProblem.Unsupported, "source audio metadata does not match extractor tracks")
             val keys = mutableListOf<SyncPoint>()
             if (mode == ExportMode.Fast) {
                 if (mime != "video/avc" || context.contentResolver.getType(Uri.parse(source.uri)) != "video/mp4") {
-                    throw ExportFailure(ExportProblem.FastUnavailable)
+                    throw ExportFailure(ExportProblem.FastUnavailable, "fast mode requires MP4 content with AVC video")
                 }
+            }
+            if (mode == ExportMode.Fast || mode == ExportMode.Smart || mode == ExportMode.Hybrid) {
                 extractor.selectTrack(videos.single())
+                // The source does not need its first sync sample at timestamp 0. A selected
+                // range may start later in the file; ExportPlanner will require an IDR at or
+                // after each requested In and the muxer will normalize the copied timestamps.
                 extractor.seekTo(0, MediaExtractor.SEEK_TO_NEXT_SYNC)
-                if (extractor.sampleTime != 0L) throw ExportFailure(ExportProblem.FastUnavailable)
                 var previous = -1L
                 while (extractor.sampleTime > previous && extractor.sampleTime >= 0) {
                     ensureActive()
                     val time = extractor.sampleTime
-                    if (extractor.sampleFlags and MediaExtractor.SAMPLE_FLAG_SYNC == 0) throw ExportFailure(ExportProblem.FastUnavailable)
+                    if (extractor.sampleFlags and MediaExtractor.SAMPLE_FLAG_SYNC == 0) throw ExportFailure(ExportProblem.FastUnavailable, "sync sample at $time is not flagged as sync")
                     val size = extractor.sampleSize
-                    if (size <= 0 || size > 32 * 1024 * 1024) throw ExportFailure(ExportProblem.FastUnavailable)
+                    if (size <= 0 || size > 32 * 1024 * 1024) throw ExportFailure(ExportProblem.FastUnavailable, "invalid sync sample size=$size at $time")
                     val buffer = ByteBuffer.allocate(size.toInt())
                     val bytesRead = extractor.readSampleData(buffer, 0)
                     keys.add(SyncPoint(time, bytesRead > 0 && containsIdr(buffer.array(), bytesRead)))

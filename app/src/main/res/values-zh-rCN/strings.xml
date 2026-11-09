@@ -152,4 +152,23 @@
     <string name="version_info">版本 %1$s</string>
     <string name="rights_reserved">© 2026 doctorcola001 · 非商业使用</string>
     <string name="delete_clip_number">删除第 %1$d 个片段</string>
+    <string name="mode_hybrid">兼容 · 用重新编码安全处理边界</string>
+    <string name="hybrid_description">兼容兜底路径。v0.2 当前为可靠性而重新编码所选序列，暂不宣称只重编码拼接处几帧。</string>
+    <string name="review_hybrid">兼容模式 · 重新编码输出</string>
+    <string name="try_hybrid">改用兼容模式</string>
+    <string name="restore_choice_title">继续上次项目？</string>
+    <string name="restore_choice_body">检测到本机保存的视频和草稿。要继续上次项目，还是开始新项目？</string>
+    <string name="continue_last_project">继续</string>
+    <string name="start_new_project">新项目</string>
+    <string name="source_video_info">视频：%1$s · %2$s · %3$dx%4$d</string>
+    <string name="source_audio_info">音频：%1$s · %2$d Hz · %3$d 声道</string>
+    <string name="source_container_info">容器：%1$s · %2$s</string>
+    <string name="source_bitrate_info">视频码率：%1$s · %2$s fps</string>
+    <string name="none">无</string>
+    <string name="unknown">未知</string>
+    <string name="export_technical_detail">技术详情：%1$s</string>
+    <string name="mode_smart">智能 · 安全片段复制，边界片段重编码</string>
+    <string name="smart_description">智能拼接：直接复制可安全流复制的片段，只对边界无法复制的片段重新编码。</string>
+    <string name="review_smart">智能拼接 · 混合复制与边界重编码</string>
+    <string name="try_smart">改用智能拼接</string>
 </resources>

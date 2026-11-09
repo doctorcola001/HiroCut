@@ -17,6 +17,7 @@ import java.util.UUID
 enum class ExportStage { Initializing, Idle, Preparing, Review, Rendering, Verifying, Ready, Saving, Cancelling, Completed, Cancelled, Failed }
 data class ExportUiState(val stage: ExportStage = ExportStage.Initializing, val progress: Int? = null,
     val plan: ExportPlan? = null, val result: RenderedVideo? = null, val problem: ExportProblem? = null,
+    val problemDetail: String? = null,
     val savedUri: String? = null, val recovered: Boolean = false, val incompleteDestination: Boolean = false,
     val interruptedJob: Boolean = false,
     val clipProgress: Map<String, Int> = emptyMap(), val completedClipIds: Set<String> = emptySet(), val merging: Boolean = false) {
@@ -49,8 +50,8 @@ class ExportCoordinator(private val context: Context) {
                 val plan = ExportPlanner.build(source, project.copy(clips = project.clips.toList()), mode, spec)
                 mutableState.value = ExportUiState(stage = ExportStage.Review, plan = plan)
             } catch (cancel: CancellationException) { mutableState.value = ExportUiState(stage = ExportStage.Cancelled); throw cancel }
-            catch (known: ExportFailure) { fail(known.problem) }
-            catch (_: Exception) { fail(ExportProblem.Processing) }
+            catch (known: ExportFailure) { fail(known.problem, known.detail) }
+            catch (_: Exception) { fail(ExportProblem.Processing, null) }
         }
     }
 
@@ -66,7 +67,7 @@ class ExportCoordinator(private val context: Context) {
                 val jobDir = withContext(Dispatchers.IO) {
                     root.mkdirs()
                     val estimated = ((plan.source.fileSizeBytes ?: 64L * 1024 * 1024).toDouble() *
-                        (plan.durationUs.toDouble() / (plan.source.durationMs * 1000.0)) * if (plan.mode == ExportMode.Precise) 2.0 else 1.1)
+                        (plan.durationUs.toDouble() / (plan.source.durationMs * 1000.0)) * if (plan.mode == ExportMode.Fast) 1.1 else 2.0)
                         .coerceIn(0.0, Long.MAX_VALUE.toDouble()).toLong()
                     if (root.usableSpace - 16L * 1024 * 1024 < maxOf(32L * 1024 * 1024, estimated)) throw ExportFailure(ExportProblem.InsufficientSpace)
                     File(root, UUID.randomUUID().toString()).also { check(it.mkdir()) }
@@ -90,8 +91,8 @@ class ExportCoordinator(private val context: Context) {
                 mutableState.value = mutableState.value.copy(stage = ExportStage.Ready, result = result, progress = null)
                 success = true
             } catch (cancel: CancellationException) { mutableState.value = ExportUiState(stage = ExportStage.Cancelled); throw cancel }
-            catch (known: ExportFailure) { fail(known.problem) }
-            catch (_: Exception) { fail(ExportProblem.Processing) }
+            catch (known: ExportFailure) { fail(known.problem, known.detail) }
+            catch (_: Exception) { fail(ExportProblem.Processing, null) }
             finally {
                 if (!success) {
                     val stale = createdDir
@@ -154,7 +155,7 @@ class ExportCoordinator(private val context: Context) {
             scope.launch(Dispatchers.IO) { old?.deleteRecursively() }
         }
     }
-    private fun fail(problem: ExportProblem) { mutableState.value = mutableState.value.copy(stage = ExportStage.Failed, problem = problem, progress = null) }
+    private fun fail(problem: ExportProblem, detail: String? = null) { mutableState.value = mutableState.value.copy(stage = ExportStage.Failed, problem = problem, problemDetail = detail, progress = null) }
 
     private suspend fun writeJournal(dir: File, stage: String, result: RenderedVideo? = null) = withContext(Dispatchers.IO) {
         val data = JSONObject().put("stage", stage)
